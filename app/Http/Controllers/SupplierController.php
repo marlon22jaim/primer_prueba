@@ -10,32 +10,27 @@ use App\Models\Supplier;
 use App\Filters\SupplierFilter;
 use Illuminate\Http\Request;
 
+
+
+
+use App\DAO\SupplierDAO;
+
+
 class SupplierController extends Controller
 {
+    protected $supplierDAO;
+
+    public function __construct(SupplierDAO $supplierDAO)
+    {
+        $this->supplierDAO = $supplierDAO;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        //
-        $filter = new SupplierFilter();
-        $queryItems = $filter->transform($request);
-
-        $includeOderdes = $request->query('includeOrders');
-        $supplier = Supplier::where($queryItems);
-
-        if ($includeOderdes) {
-            $supplier = $supplier->with('orders');
-        }
-        return new SupplierCollection($supplier->paginate()->appends($request->query()));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return new SupplierCollection($this->supplierDAO->obtenerTodos());
     }
 
     /**
@@ -43,53 +38,57 @@ class SupplierController extends Controller
      */
     public function store(StoreSupplierRequest $request)
     {
-        // 
-        $supplier = new SupplierResource(Supplier::create($request->all()));
+        $supplier = $this->supplierDAO->crear($request->all());
         return response()->json(['message' => 'Proveedor creado correctamente', 'data' => new SupplierResource($supplier)], 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Supplier $supplier)
+    public function show($id)
     {
+
         //
         $includeOrders = request()->query('includeOrders');
-        
+        $supplier = $this->supplierDAO->obtenerPorId($id);
         if ($includeOrders) {
             return new SupplierResource($supplier->loadMissing('orders'));
+        }
+
+
+        //
+
+
+
+        if (!$supplier) {
+            return response()->json(['message' => 'Proveedor no encontrado'], 404);
         }
         return new SupplierResource($supplier);
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Supplier $supplier)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateSupplierRequest $request, Supplier $supplier)
+    public function update(UpdateSupplierRequest $request, $id)
     {
-        //
-
-        $supplier->update($request->all());
+        $supplier = $this->supplierDAO->obtenerPorId($id);
+        if (!$supplier) {
+            return response()->json(['message' => 'Proveedor no encontrado'], 404);
+        }
+        $supplier = $this->supplierDAO->actualizar($id, $request->all());
+        return new SupplierResource($supplier);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Supplier $supplier)
+    public function destroy($id)
     {
-        //
-        // Elimina el proveedor
-        $supplier->delete();
-
-        // Devuelve una respuesta indicando que el proveedor ha sido eliminado
+        $supplier = $this->supplierDAO->obtenerPorId($id);
+        if (!$supplier) {
+            return response()->json(['message' => 'Proveedor no encontrado'], 404);
+        }
+        $this->supplierDAO->eliminar($id);
         return response()->json(['message' => 'Proveedor eliminado correctamente'], 200);
     }
 }
