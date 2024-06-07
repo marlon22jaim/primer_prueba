@@ -32,4 +32,9 @@ class OrderDAO
     {
         return Order::destroy($id);
     }
+
+    public function bulkCreate($data)
+    {
+        return Order::insert($data);
+    }
 }

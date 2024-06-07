@@ -9,6 +9,9 @@ Route::get('/', function () {
 });
 
 Route::get('/setup', function () {
+    if (config('app.env') !== 'local') {
+        abort(403, 'Unauthorized action.');
+    }
 
     $credentials = [
         'email' => 'admin@admin.com',

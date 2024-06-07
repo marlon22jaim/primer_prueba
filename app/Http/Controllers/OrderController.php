@@ -56,4 +56,15 @@ class OrderController extends Controller
         $this->orderDAO->delete($id);
         return response()->json(null, 204);
     }
+
+    public function bulkStore(BulkStoreOrderRequest $request)
+    {
+        $bulk = collect($request->all())->map(function ($arr) {
+            return Arr::except($arr, ['supplierId', 'billedDate', 'paidDate']);
+        });
+
+        $this->orderDAO->bulkCreate($bulk->toArray());
+
+        return response()->json(['message' => 'Orders created successfully'], 201);
+    }
 }
