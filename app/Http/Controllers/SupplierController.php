@@ -30,6 +30,7 @@ class SupplierController extends Controller
      */
     public function index(Request $request)
     {
+
         return new SupplierCollection($this->supplierDAO->obtenerTodos());
     }
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Supplier extends Model
 {
     use HasFactory;
+    // Utiliza el trait HasFactory para generar datos de prueba
     protected $fillable = [
         'name',
         'type',
@@ -25,6 +26,7 @@ class Supplier extends Model
      */
     public function orders()
     {
+        // Define la relación de uno a muchos con la clase Order
         return $this->hasMany(Order::class);
     }
 }

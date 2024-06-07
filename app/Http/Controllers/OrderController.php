@@ -25,12 +25,16 @@ class OrderController extends Controller
         $this->orderDAO = $orderDAO;
     }
 
+    // Método para obtener todas las órdenes
     public function index(Request $request)
     {
+        // Obtiene todas las órdenes utilizando el DAO
         $orders = $this->orderDAO->getAll();
+        // Retorna la colección de órdenes en formato JSON
         return new OrderCollection($orders);
     }
 
+    // Método para almacenar una nueva orden
     public function store(StoreOrderRequest $request)
     {
         $data = $request->validated();
@@ -38,6 +42,7 @@ class OrderController extends Controller
         return response()->json($order, 201);
     }
 
+    // Método para obtener una orden específica por su ID
     public function show($id)
     {
         $order = $this->orderDAO->getById($id);
@@ -48,6 +53,7 @@ class OrderController extends Controller
     {
         $data = $request->validated();
         $order = $this->orderDAO->update($id, $data);
+        // Retorna la orden creada en formato JSON 
         return response()->json($order);
     }
 
@@ -57,14 +63,18 @@ class OrderController extends Controller
         return response()->json(null, 204);
     }
 
+    // Método para almacenar múltiples órdenes de manera masiva
     public function bulkStore(BulkStoreOrderRequest $request)
     {
+        // Procesa los datos de la solicitud para eliminar ciertos campos
         $bulk = collect($request->all())->map(function ($arr) {
             return Arr::except($arr, ['supplierId', 'billedDate', 'paidDate']);
         });
 
+        // Almacena las órdenes masivas utilizando el DAO
         $this->orderDAO->bulkCreate($bulk->toArray());
 
+        // Retorna un mensaje de éxito en formato JSON con código de estado 201 (creado)
         return response()->json(['message' => 'Orders created successfully'], 201);
     }
 }
